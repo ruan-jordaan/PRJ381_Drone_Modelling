@@ -1,11 +1,21 @@
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import BackLink from "@/components/BackLink";
 
-export default function ViewerPage({ params }: { params: { caseId: string } }) {
+export default async function ViewerPage({
+  params,
+}: {
+  params: Promise<{ caseId: string }>;
+}) {
+  const { caseId } = await params;
+
   return (
     <div className="flex h-screen flex-col bg-zinc-50 dark:bg-zinc-950 md:flex-row">
       {/* Canvas Area */}
       <div className="flex-1 bg-zinc-200 dark:bg-zinc-900 relative">
+        <div className="absolute left-4 top-4 z-10">
+          <BackLink href={`/cases/${caseId}`} label="Case details" />
+        </div>
         <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
           [react-three-fiber Canvas Placeholder]
         </div>

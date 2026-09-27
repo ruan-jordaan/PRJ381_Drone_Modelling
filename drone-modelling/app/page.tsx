@@ -1,7 +1,9 @@
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
+import LogoutButton from "../components/LogoutButton";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 
 // Mock data reflecting the workflow statuses
 const cases = [
@@ -25,7 +27,10 @@ const cases = [
   },
 ];
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const user = await getCurrentUser();
+  const isContractor = user?.role === "CONTRACTOR";
+
   return (
     <div className="min-h-screen bg-zinc-50 p-6 font-sans antialiased dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto max-w-6xl">
@@ -48,11 +53,14 @@ export default function Dashboard() {
                 placeholder="Case ID or location..."
               />
             </div>
-            <div className="w-full sm:w-36">
-              <Link href="/cases/new">
-                <Button>New Case</Button>
-              </Link>
-            </div>
+            {isContractor && (
+              <div className="w-full sm:w-36">
+                <Link href="/cases/new">
+                  <Button>New Case</Button>
+                </Link>
+              </div>
+            )}
+            <LogoutButton />
           </div>
         </header>
 

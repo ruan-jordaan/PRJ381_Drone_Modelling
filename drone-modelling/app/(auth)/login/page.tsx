@@ -1,20 +1,40 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Card from "@/components/ui/Card";
+import ErrorBanner from "@/components/ErrorBanner";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // Future authentication logic goes here
+    const form = new FormData(e.currentTarget);
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: form.get("email"),
+        password: form.get("password"),
+      }),
+    });
 
+    setLoading(false);
+    if (!res.ok) {
+      const { error } = await res.json();
+      setError(error ?? "Something went wrong.");
+      return;
+    }
     router.push("/");
+    router.refresh();
   };
 
   return (
@@ -29,6 +49,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="mt-6 flex flex-col gap-4">
           <Input
             id="email"
+            name="email"
             label="Email"
             type="email"
             autoComplete="email"
@@ -36,23 +57,19 @@ export default function LoginPage() {
           />
           <Input
             id="password"
+            name="password"
             label="Password"
             type="password"
             autoComplete="current-password"
             required
           />
-          <Button type="submit" className="mt-2">
-            Log in
+          {error && <ErrorBanner message={error} />}
+          <Button type="submit" className="mt-2" disabled={loading}>
+            {loading ? "Logging in..." : "Log in"}
           </Button>
         </form>
         <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          No account?{" "}
-          <Link
-            href="/register"
-            className="font-medium text-black dark:text-zinc-50"
-          >
-            Register
-          </Link>
+          Don&apos;t have access yet? Contact your account administrator.
         </p>
       </Card>
     </div>

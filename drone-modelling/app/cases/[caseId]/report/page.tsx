@@ -1,13 +1,22 @@
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import BackLink from "@/components/BackLink";
 
-export default function ReportPage({ params }: { params: { caseId: string } }) {
+export default async function ReportPage({
+  params,
+}: {
+  params: Promise<{ caseId: string }>;
+}) {
+  const { caseId } = await params;
+
   return (
     <div className="min-h-screen bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10 flex justify-center">
       <div className="w-full max-w-4xl">
+        <BackLink href={`/cases/${caseId}`} label="Case details" />
+
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-            Draft Report: {params.caseId}
+            Draft Report: {caseId}
           </h1>
         </header>
 

@@ -12,10 +12,6 @@ build/
 .env
 .env*.local
 
-# prisma (local SQLite dev db)
-prisma/*.db
-prisma/*.db-journal
-
 # vercel
 .vercel
 

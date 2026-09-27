@@ -1,21 +1,25 @@
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import BackLink from "@/components/BackLink";
 import Link from "next/link";
 
-export default function CaseDetailsPage({
+export default async function CaseDetailsPage({
   params,
 }: {
-  params: { caseId: string };
+  params: Promise<{ caseId: string }>;
 }) {
+  const { caseId } = await params;
   const currentStatus = "Uploaded"; // Mock status
 
   return (
     <div className="min-h-screen bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto max-w-4xl">
+        <BackLink href="/" label="Dashboard" />
+
         <header className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-              {params.caseId}
+              {caseId}
             </h1>
             <p className="text-sm text-zinc-500">
               N1 Highway, Cape Town • 2026-09-18
@@ -43,12 +47,12 @@ export default function CaseDetailsPage({
               Review & Analysis
             </h2>
             <div className="flex flex-col gap-3">
-              <Link href={`/cases/${params.caseId}/viewer`}>
+              <Link href={`/cases/${caseId}/viewer`}>
                 <Button className="!bg-transparent !text-zinc-900 border border-black/[.08] hover:!bg-zinc-100 dark:!text-zinc-100 dark:border-white/[.145] dark:hover:!bg-zinc-900">
                   Open 3D Model Viewer
                 </Button>
               </Link>
-              <Link href={`/cases/${params.caseId}/report`}>
+              <Link href={`/cases/${caseId}/report`}>
                 <Button className="!bg-transparent !text-zinc-900 border border-black/[.08] hover:!bg-zinc-100 dark:!text-zinc-100 dark:border-white/[.145] dark:hover:!bg-zinc-900">
                   View Report Draft
                 </Button>
