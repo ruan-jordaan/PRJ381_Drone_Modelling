@@ -1,0 +1,13 @@
+services:
+  nodeodm:
+    image: opendronemap/nodeodm:latest
+    container_name: prj381_nodeodm
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./odm_data:/var/www/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8g
