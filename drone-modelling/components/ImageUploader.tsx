@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ImageUploaderProps = {
   caseId: string;
 };
 
 export default function ImageUploader({ caseId }: ImageUploaderProps) {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -15,35 +19,72 @@ export default function ImageUploader({ caseId }: ImageUploaderProps) {
   }
 
   async function handleUpload() {
-  for (const file of files) {
-    const response = await fetch(`/api/cases/${caseId}/upload`, {         //asks the backend for a presigned R2 upload URL
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fileName: file.name,
-        contentType: file.type,
-      }),
-    });
+  try {
+    setUploading(true);
+    setMessage("");
 
-    const data = await response.json();
+    for (const file of files) {
+      const response = await fetch(`/api/cases/${caseId}/upload`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to prepare image upload.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to prepare image upload.");
+      }
+
+      const uploadResponse = await fetch(data.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload ${file.name}.`);
+      }
+
+      const registerResponse = await fetch(
+        `/api/cases/${caseId}/images`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            key: data.key,
+            originalFilename: file.name,
+          }),
+        }
+      );
+
+      const registerData = await registerResponse.json();
+
+      if (!registerResponse.ok) {
+        throw new Error(
+          registerData.error || `Failed to register ${file.name}.`
+        );
+      }
     }
 
-    const uploadResponse = await fetch(data.uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
-      body: file,
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error(`Failed to upload ${file.name}.`);
-    }
+    setFiles([]);
+    setMessage("Upload complete.");
+    router.refresh();
+  } catch (error) {
+    setMessage(
+      error instanceof Error ? error.message : "Upload failed."
+    );
+  } finally {
+    setUploading(false);
   }
 }
 
@@ -65,10 +106,16 @@ export default function ImageUploader({ caseId }: ImageUploaderProps) {
         <button
           type="button"
           onClick={handleUpload}
-          className="inline-flex w-fit rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
+          disabled={uploading}
+          className="inline-flex w-fit rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Upload Images
-        </button>
+          {uploading ? "Uploading..." : "Upload Images"}
+        </button>)}
+
+        {message && (
+          <p className="text-sm text-zinc-400">
+            {message}
+          </p>
         )}
      
 
