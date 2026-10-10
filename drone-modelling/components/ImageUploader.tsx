@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 type ImageUploaderProps = {
   caseId: string;
 };
 
+type StoredImage = {
+  id: string;
+  originalFilename: string;
+  };
+
 export default function ImageUploader({ caseId }: ImageUploaderProps) {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
+  const [storedImages, setStoredImages] = useState<StoredImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+  loadStoredImages();
+  }, [caseId]);
+
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? []);
     setFiles(selectedFiles);
+  }
+
+  async function loadStoredImages() {
+    const response = await fetch(`/api/cases/${caseId}/images`);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to load stored images.");
+    }
+
+    setStoredImages(data.images ?? []);
   }
 
   async function handleUpload() {
@@ -116,6 +139,28 @@ export default function ImageUploader({ caseId }: ImageUploaderProps) {
           <p className="text-sm text-zinc-400">
             {message}
           </p>
+        )}
+
+        {storedImages.length > 0 && (
+          <div className="mt-4 text-sm">
+            <p className="font-medium">
+              Uploaded images: {storedImages.length}
+            </p>
+
+            <div className="mt-2 text-zinc-400">
+             {storedImages.slice(0, 3).map((image) => (
+               <p key={image.id}>
+                 {image.originalFilename}
+               </p>
+             ))}
+
+             {storedImages.length > 3 && (
+               <p className="mt-1">
+                 + {storedImages.length - 3} more images
+               </p>
+             )}
+            </div>
+          </div>
         )}
      
 

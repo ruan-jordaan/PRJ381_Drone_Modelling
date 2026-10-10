@@ -194,9 +194,6 @@ export default async function CaseDetailsPage({
 
             <ImageUploader caseId={caseId} />
 
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
-              Images currently stored: {caseData.images.length}
-            </p>
           </Card>
         </div>
       </div>
