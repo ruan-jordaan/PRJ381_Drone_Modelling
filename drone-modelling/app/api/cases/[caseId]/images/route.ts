@@ -73,3 +73,44 @@ export async function POST(
     { status: 201 }
   );
 }
+
+export async function GET(
+  _request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{ caseId: string }>;
+  }
+) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "Authentication required." },
+      { status: 401 }
+    );
+  }
+
+  const { caseId } = await params;
+
+  const caseRecord = await prisma.case.findFirst({
+    where: {
+      id: caseId,
+      contractorId: user.id,
+    },
+    include: {
+      images: true,
+    },
+  });
+
+  if (!caseRecord) {
+    return NextResponse.json(
+      { error: "Case not found." },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({
+    images: caseRecord.images,
+  }); 
+}
