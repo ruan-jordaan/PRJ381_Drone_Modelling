@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRole, CaseStatus } from "@prisma/client";
+import ImageUploader from "@/components/ImageUploader";
 
 export default async function CaseDetailsPage({
   params,
@@ -191,9 +192,7 @@ export default async function CaseDetailsPage({
               Accident Images
             </h2>
 
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Image uploading will be connected here next.
-            </p>
+            <ImageUploader caseId={caseId} />
 
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
               Images currently stored: {caseData.images.length}
