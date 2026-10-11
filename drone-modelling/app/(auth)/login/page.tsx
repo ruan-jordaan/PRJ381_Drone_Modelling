@@ -39,6 +39,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-16 dark:bg-black">
+      <div className="w-full max-w-sm">
       <Card>
         <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
           Log in
@@ -72,6 +73,7 @@ export default function LoginPage() {
           Don&apos;t have access yet? Contact your account administrator.
         </p>
       </Card>
+      </div>
     </div>
   );
 }
