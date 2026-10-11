@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import BackLink from "@/components/BackLink";
+import ImageUploader from "@/components/ImageUploader";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
@@ -20,20 +21,15 @@ export default async function CaseDetailsPage({
     notFound();
   }
 
-  // Get the case while applying the same access rules
-  // used by the case API.
   const caseData = await prisma.case.findFirst({
     where: {
       id: caseId,
 
       OR: [
-        // Contractors can view their own cases
         ...(user.role === UserRole.CONTRACTOR
           ? [{ contractorId: user.id }]
           : []),
 
-        // Insurance users can only view finalized cases
-        // where they are assigned as the insurer.
         ...(user.role === UserRole.INSURANCE
           ? [
               {
@@ -74,7 +70,6 @@ export default async function CaseDetailsPage({
       <div className="mx-auto max-w-4xl">
         <BackLink href="/" label="Dashboard" />
 
-        {/* Case Header */}
         <header className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
@@ -91,7 +86,6 @@ export default async function CaseDetailsPage({
           </span>
         </header>
 
-        {/* Case Description */}
         <Card>
           <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Case Description
@@ -102,7 +96,6 @@ export default async function CaseDetailsPage({
           </p>
         </Card>
 
-        {/* Parties */}
         <div className="mt-6">
           <Card>
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -142,7 +135,6 @@ export default async function CaseDetailsPage({
           </Card>
         </div>
 
-        {/* Processing and Review */}
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -184,7 +176,6 @@ export default async function CaseDetailsPage({
           </Card>
         </div>
 
-        {/* Image Upload - placeholder for our next step */}
         <div className="mt-6">
           <Card>
             <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -192,12 +183,14 @@ export default async function CaseDetailsPage({
             </h2>
 
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Image uploading will be connected here next.
+              Upload drone photos for this case.
             </p>
 
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-500">
               Images currently stored: {caseData.images.length}
             </p>
+
+            <ImageUploader caseId={caseId} />
           </Card>
         </div>
       </div>
