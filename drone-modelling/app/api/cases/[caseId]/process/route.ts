@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createNodeODMTask } from "@/lib/nodeodm";
+import { createDownloadUrl } from "@/lib/storage";
 
 export async function POST(
     request: Request,
@@ -24,7 +25,9 @@ export async function POST(
     }
 
     try {
-        const imageUrls = caseData.images.map((img) => img.url);
+        const imageUrls = await Promise.all(
+        caseData.images.map((img) => createDownloadUrl(img.url))
+        );
         const taskId = await createNodeODMTask(imageUrls);
 
         await prisma.case.update({
