@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client, GetObjectCommand, HeadObjectCommand  } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const r2 = new S3Client({
@@ -81,6 +81,7 @@ export async function storeModelFromUrl(
   }
 
   const arrayBuffer = await response.arrayBuffer();
+  
   const modelData = new Uint8Array(arrayBuffer);
 
   const key = createModelKey(caseId);
@@ -88,4 +89,19 @@ export async function storeModelFromUrl(
   await uploadModel(key, modelData);
 
   return key;
+}
+
+export async function objectExists(key: string) {
+  try {
+    const command = new HeadObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+    });
+
+    await r2.send(command);
+
+    return true;
+  } catch {
+    return false;
+  }
 }
