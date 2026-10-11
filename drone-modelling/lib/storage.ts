@@ -47,3 +47,45 @@ export function createImageKey(
 
   return `cases/${caseId}/images/${uniqueId}-${safeFileName}`;      //builds the object for R2
 }
+
+export function createModelKey(caseId: string) {
+  const uniqueId = crypto.randomUUID();
+
+  return `cases/${caseId}/models/${uniqueId}-model.glb`;
+}
+
+export async function uploadModel(
+  key: string,
+  modelData: Blob | Uint8Array
+) {
+  const command = new PutObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+    Body: modelData,
+    ContentType: "model/gltf-binary",
+  });
+
+  await r2.send(command);
+}
+
+export async function storeModelFromUrl(
+  caseId: string,
+  modelUrl: string
+) {
+  const response = await fetch(modelUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to download 3D model: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const modelData = new Uint8Array(arrayBuffer);
+
+  const key = createModelKey(caseId);
+
+  await uploadModel(key, modelData);
+
+  return key;
+}
