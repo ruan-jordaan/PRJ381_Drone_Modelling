@@ -4,6 +4,8 @@ import { UserRole } from "@prisma/client";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+import { objectExists } from "@/lib/storage";
+
 export async function POST(
   request: Request,
   {
@@ -58,6 +60,24 @@ export async function POST(
       { error: "Image information is incomplete." },
       { status: 400 }
     );
+  }
+
+  const expectedPrefix = `cases/${caseId}/images/`;
+
+  if (!key.startsWith(expectedPrefix)) {
+   return NextResponse.json(
+     { error: "Invalid image storage key." },
+     { status: 400 }
+   );
+  }
+
+  const existsInStorage = await objectExists(key);
+
+  if (!existsInStorage) {
+    return NextResponse.json(
+      { error: "Uploaded image was not found in storage." },
+     { status: 400 }
+   );
   }
 
   const image = await prisma.image.create({
