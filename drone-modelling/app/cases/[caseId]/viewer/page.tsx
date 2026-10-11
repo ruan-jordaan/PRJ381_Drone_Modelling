@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import BackLink from "@/components/BackLink";
+import ModelViewer from "@/components/ModelViewer";
 
 export default async function ViewerPage({
   params,
@@ -16,8 +17,8 @@ export default async function ViewerPage({
         <div className="absolute left-4 top-4 z-10">
           <BackLink href={`/cases/${caseId}`} label="Case details" />
         </div>
-        <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
-          [react-three-fiber Canvas Placeholder]
+        <div className="absolute inset-0">
+          <ModelViewer caseId={caseId} />
         </div>
       </div>
 
