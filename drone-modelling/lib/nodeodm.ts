@@ -14,9 +14,22 @@ export async function createNodeODMTask(imageUrls: string[]): Promise<string> {
     const formData = new FormData();
 
     for (let i = 0; i < imageUrls.length; i++) {
-        const res = await fetch(imageUrls[i]);
+      const res = await fetch(imageUrls[i]);
+
+      if (!res.ok) {
+        throw new Error(
+               `Failed to download image ${i + 1} for NodeODM: ${res.status} ${res.statusText}`
+           );
+         
+      }
+
         const blob = await res.blob();
-        formData.append('images', blob, `iamge_${i}.jpg`);
+
+        formData.append(
+            "images",
+            blob,
+            `image_${i + 1}.jpg`
+        );
     }
 
     formData.append('options', JSON.stringify([
@@ -29,12 +42,19 @@ export async function createNodeODMTask(imageUrls: string[]): Promise<string> {
         body: formData,
     });
 
-    if (!response.ok){
-        throw new Error('NodeODM task creation failed: ${response.statusText}');
-    }
+    if (!response.ok) {
+    throw new Error(
+        `NodeODM task creation failed: ${response.status} ${response.statusText}`
+    );
+}
 
     const data = await response.json();
-    return data.taskId;
+
+    if (!data.uuid) {
+        throw new Error("NodeODM did not return a task UUID.");
+    }
+
+    return data.uuid;
 
 }
 
