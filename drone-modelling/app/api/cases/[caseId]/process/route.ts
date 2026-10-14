@@ -27,6 +27,13 @@ export async function POST(
     );
   }
 
+  if (caseData.status === "PROCESSING") {
+    return NextResponse.json(
+      { error: "This case is already being processed" },
+      { status: 409 },
+    );
+  }
+
   try {
     const imageUrls = await Promise.all(
       caseData.images.map((img) => getDownloadUrl(img.url)),
@@ -35,7 +42,9 @@ export async function POST(
 
     await prisma.case.update({
       where: { id: caseId },
-      data: { status: "PROCESSING", nodeOdmTaskId: taskId },
+      // Clear modelUrl so a re-run doesn't keep serving the old model once
+      // this new task completes.
+      data: { status: "PROCESSING", nodeOdmTaskId: taskId, modelUrl: null },
     });
 
     return NextResponse.json({ success: true, taskId: taskId });
