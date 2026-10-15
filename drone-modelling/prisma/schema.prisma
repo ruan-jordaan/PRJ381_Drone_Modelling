@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -45,9 +46,10 @@ model Case {
   images       Image[]
   measurements Measurement[]
 
-  modelUrl  String?
-  narrative String?
-  reportUrl String?
+  modelUrl      String?
+  nodeOdmTaskId String?
+  narrative     String?
+  reportUrl     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -29,23 +29,23 @@ export async function POST(
     return NextResponse.json({ error: "No images provided" }, { status: 400 });
   }
 
+  const imageFiles = files.filter((f) => f.type.startsWith("image/"));
+
+  const UPLOAD_CONCURRENCY = 10;
   const created = [];
-  for (const file of files) {
-    if (!file.type.startsWith("image/")) continue;
-
-    const key = `cases/${caseId}/${randomUUID()}-${file.name}`;
-    const bytes = Buffer.from(await file.arrayBuffer());
-
-    await uploadObject(key, bytes, file.type);
-
-    const image = await prisma.image.create({
-      data: {
-        caseId,
-        url: key,
-        originalFilename: file.name,
-      },
-    });
-    created.push(image);
+  for (let i = 0; i < imageFiles.length; i += UPLOAD_CONCURRENCY) {
+    const batch = imageFiles.slice(i, i + UPLOAD_CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map(async (file) => {
+        const key = `cases/${caseId}/${randomUUID()}-${file.name}`;
+        const bytes = Buffer.from(await file.arrayBuffer());
+        await uploadObject(key, bytes, file.type);
+        return prisma.image.create({
+          data: { caseId, url: key, originalFilename: file.name },
+        });
+      })
+    );
+    created.push(...batchResults);
   }
 
   if (created.length === 0) {

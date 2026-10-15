@@ -5,9 +5,11 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./odm_data:/var/www/data
+      - odm_data:/var/www/data
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 8g
+          memory: 20g
+volumes:
+  odm_data:

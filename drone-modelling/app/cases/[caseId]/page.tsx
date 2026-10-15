@@ -2,6 +2,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import BackLink from "@/components/BackLink";
 import ImageUploader from "@/components/ImageUploader";
+import ProcessButton from "@/components/ProcessButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
@@ -146,9 +147,7 @@ export default async function CaseDetailsPage({
               mesh and point cloud.
             </p>
 
-            <Button>
-              Start Photogrammetry Processing
-            </Button>
+            <ProcessButton caseId={caseId} />
           </Card>
 
           <Card>
