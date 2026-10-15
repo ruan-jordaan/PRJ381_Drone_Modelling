@@ -30,3 +30,15 @@ export async function objectExists(key: string): Promise<boolean> {
     return false;
   }
 }
+
+// Fetches an object's bytes server-side. Used to proxy files (e.g. the 3D model)
+// through our own API instead of handing the browser a direct R2 URL — some
+// networks/browser setups fail to reach r2.cloudflarestorage.com directly even
+// though our server reaches it fine, so proxying sidesteps that entirely.
+export async function getObjectBytes(
+  key: string
+): Promise<{ body: Buffer; contentType?: string }> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  const body = Buffer.from(await res.Body!.transformToByteArray());
+  return { body, contentType: res.ContentType };
+}

@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Environment } from "@react-three/drei";
+import { OrbitControls, useGLTF, Environment, Bounds } from "@react-three/drei";
 
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url);
@@ -15,7 +15,13 @@ export default function ModelViewer({ url }: { url: string }) {
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 10, 5]} intensity={1} />
       <Suspense fallback={null}>
-        <Model url={url} />
+        {/* NodeODM exports real-world-scaled meshes that can sit far from the
+            origin (GPS-anchored coordinates) or span tens/hundreds of meters —
+            a fixed camera position can't assume the model is anywhere near it.
+            Bounds auto-fits the camera to whatever actually loaded. */}
+        <Bounds fit clip observe margin={1.2}>
+          <Model url={url} />
+        </Bounds>
         <Environment preset="city" />
       </Suspense>
       <OrbitControls makeDefault />

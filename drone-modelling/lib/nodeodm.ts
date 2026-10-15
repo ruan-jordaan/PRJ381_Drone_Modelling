@@ -9,13 +9,13 @@ export interface NodeODMTaskStatus {
   progress: number;
 }
 
-async function initNodeODMTask(): Promise<string> {
+async function initNodeODMTask(webhookUrl?: string): Promise<string> {
   const formData = new FormData();
   formData.append(
     "options",
     JSON.stringify([
       { name: "max-concurrency", value: 6 },
-      { name: "pc-quality", value: "medium" },
+      { name: "pc-quality", value: "high" },
       { name: "feature-quality", value: "high" },
       { name: "skip-orthophoto", value: true },
       { name: "skip-report", value: true },
@@ -23,6 +23,11 @@ async function initNodeODMTask(): Promise<string> {
       { name: "sky-removal", value: true },
     ]),
   );
+  // NodeODM POSTs to this URL (with the task's status, same shape as
+  // /task/{id}/info) when the task finishes — see app/api/webhooks/nodeodm.
+  if (webhookUrl) {
+    formData.append("webhook", webhookUrl);
+  }
 
   const response = await fetch(`${NODEODM_URL}/task/new/init`, {
     method: "POST",
@@ -74,8 +79,11 @@ async function commitNodeODMTask(uuid: string): Promise<void> {
   }
 }
 
-export async function createNodeODMTask(imageUrls: string[]): Promise<string> {
-  const uuid = await initNodeODMTask();
+export async function createNodeODMTask(
+  imageUrls: string[],
+  webhookUrl?: string,
+): Promise<string> {
+  const uuid = await initNodeODMTask(webhookUrl);
 
   for (let i = 0; i < imageUrls.length; i += UPLOAD_BATCH_SIZE) {
     const batch = imageUrls.slice(i, i + UPLOAD_BATCH_SIZE);
@@ -94,6 +102,14 @@ export async function getNodeODMTaskStatus(
     throw new Error(`Failed to fetch status for task ${uuid}`);
   }
   const data = await response.json();
+  // NodeODM returns 200 OK with { error: "..." } (no `status` field) for a
+  // task ID it doesn't recognize, instead of a 4xx — catch that explicitly
+  // rather than letting callers crash on `.status.code`.
+  if (!data.status || data.error) {
+    throw new Error(
+      `NodeODM does not recognize task ${uuid}: ${data.error ?? "no status in response"}`,
+    );
+  }
   return {
     taskId: data.uuid,
     status: data.status,

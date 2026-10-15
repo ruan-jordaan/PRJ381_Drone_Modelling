@@ -1,9 +1,8 @@
-import AdmZip from "adm-zip";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getDownloadUrl, objectExists, uploadObject } from "@/lib/storage";
-import { getNodeODMResultUrl, getNodeODMTaskStatus } from "@/lib/nodeodm";
+import { objectExists } from "@/lib/storage";
+import { syncCaseModelFromNodeODM } from "@/lib/modelExtraction";
 
 export async function GET(
   request: Request,
@@ -23,59 +22,28 @@ export async function GET(
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
+  // Served through our own /model/file route rather than a direct R2 URL — see
+  // that route for why (some browser/network setups can't reach
+  // r2.cloudflarestorage.com directly even though our server can).
+  const fileUrl = `/api/cases/${caseId}/model/file`;
+
   if (caseRecord.modelUrl) {
     if (await objectExists(caseRecord.modelUrl)) {
-      const url = await getDownloadUrl(caseRecord.modelUrl);
-      return NextResponse.json({ status: "ready", url });
+      return NextResponse.json({ status: "ready", url: fileUrl });
     }
     // DB points at a key that isn't actually in R2 (stale/mock data) — clear it
-    // and fall through to rebuild from NodeODM below.
+    // and fall through to check NodeODM below.
     await prisma.case.update({ where: { id: caseId }, data: { modelUrl: null } });
   }
 
-  if (!caseRecord.nodeOdmTaskId) {
-    return NextResponse.json({ status: "not_started" });
+  // NodeODM's webhook (see /api/webhooks/nodeodm) normally already did this
+  // extraction by the time anyone opens the viewer, but this poll is kept as
+  // a fallback — it's the same sync function, so it's a no-op if the webhook
+  // already ran, and it still works if the webhook never arrives (NodeODM
+  // unreachable from the webhook, local dev network hiccup, etc).
+  const result = await syncCaseModelFromNodeODM(caseId);
+  if (result.status === "ready") {
+    return NextResponse.json({ status: "ready", url: fileUrl });
   }
-
-  const nodeStatus = await getNodeODMTaskStatus(caseRecord.nodeOdmTaskId);
-
-  if (nodeStatus.status.code !== 40) {
-    return NextResponse.json({
-      status: "processing",
-      nodeOdmStatusCode: nodeStatus.status.code,
-      progress: nodeStatus.progress,
-    });
-  }
-
-  const zipResponse = await fetch(getNodeODMResultUrl(caseRecord.nodeOdmTaskId));
-  if (!zipResponse.ok) {
-    return NextResponse.json(
-      { error: "Failed to download NodeODM result" },
-      { status: 502 }
-    );
-  }
-  const zipBuffer = Buffer.from(await zipResponse.arrayBuffer());
-
-  const zip = new AdmZip(zipBuffer);
-  const glbEntry = zip
-    .getEntries()
-    .find((entry) => entry.entryName.toLowerCase().endsWith(".glb"));
-
-  if (!glbEntry) {
-    return NextResponse.json(
-      { error: "No .glb file found in NodeODM result" },
-      { status: 502 }
-    );
-  }
-
-  const key = `cases/${caseId}/model.glb`;
-  await uploadObject(key, glbEntry.getData(), "model/gltf-binary");
-
-  await prisma.case.update({
-    where: { id: caseId },
-    data: { modelUrl: key, status: "PROCESSED" },
-  });
-
-  const url = await getDownloadUrl(key);
-  return NextResponse.json({ status: "ready", url });
+  return NextResponse.json(result);
 }
