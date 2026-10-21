@@ -70,3 +70,57 @@ export async function POST(
     );
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ caseId: string }> }
+) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  const { caseId } = await params;
+
+  const caseRecord = await prisma.case.findFirst({
+    where: {
+      id: caseId,
+      contractorId: user.id,
+    },
+  });
+
+  if (!caseRecord) {
+    return NextResponse.json(
+      { error: "Case not found" },
+      { status: 404 }
+    );
+  }
+
+  const body = await request.json();
+
+  if (
+    typeof body.narrative !== "string" ||
+    !body.narrative.trim()
+  ) {
+    return NextResponse.json(
+      { error: "Narrative cannot be empty." },
+      { status: 400 }
+    );
+  }
+
+  const updatedCase = await prisma.case.update({
+    where: { id: caseId },
+    data: {
+      narrative: body.narrative.trim(),
+      status: "REPORT_DRAFTED",
+    },
+  });
+
+  return NextResponse.json({
+    narrative: updatedCase.narrative,
+  });
+}
