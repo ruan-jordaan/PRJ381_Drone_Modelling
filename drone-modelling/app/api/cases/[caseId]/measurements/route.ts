@@ -72,6 +72,20 @@ export async function POST(
     },
   });
 
+  if (
+    caseRecord.status === "REPORT_DRAFTED" ||
+    caseRecord.status === "REPORT_FINALIZED"
+  ) {
+    await prisma.case.update({
+      where: { id: caseId },
+      data: {
+        status: "MEASURED",
+        narrative: null,
+        reportUrl: null,
+      },
+    });
+  }
+
   return NextResponse.json(
     { measurement },
     { status: 201 }
