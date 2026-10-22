@@ -5,16 +5,18 @@ import { useState } from "react";
 export default function ReportEditor({
   caseId,
   initialNarrative,
+  initiallyFinalized,
 }: {
   caseId: string;
   initialNarrative?: string | null;
+  initiallyFinalized: boolean;
 }) {
   const [narrative, setNarrative] = useState(initialNarrative ?? "");
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [finalizing, setFinalizing] = useState(false);
-  const [finalized, setFinalized] = useState(false);
+  const [finalized, setFinalized] = useState(initiallyFinalized);
 
   async function generateNarrative() {
     try {
