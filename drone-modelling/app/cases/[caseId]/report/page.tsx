@@ -205,6 +205,10 @@ export default async function ReportPage({
           <ReportEditor
             caseId={caseId}
             initialNarrative={caseData.narrative}
+            initiallyFinalized={ 
+              caseData.status === "REPORT_FINALIZED" &&
+              !!caseData.reportUrl
+            }
           />
 
         </Card>
