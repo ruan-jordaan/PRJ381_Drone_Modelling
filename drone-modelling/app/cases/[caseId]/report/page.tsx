@@ -4,7 +4,6 @@ import ReportEditor from "@/components/ReportEditor";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import ReportFinalization from "@/components/ReportFinalization";
 
 export default async function ReportPage({
   params,
@@ -208,13 +207,6 @@ export default async function ReportPage({
             initialNarrative={caseData.narrative}
           />
 
-          <ReportFinalization
-            caseId={caseId}
-            alreadyFinalized={
-             caseData.status === "REPORT_FINALIZED" &&
-             !!caseData.reportUrl
-            }
-          />
         </Card>
       </div>
     </div>

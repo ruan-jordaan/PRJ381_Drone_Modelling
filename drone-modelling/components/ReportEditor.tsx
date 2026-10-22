@@ -13,6 +13,8 @@ export default function ReportEditor({
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [finalizing, setFinalizing] = useState(false);
+  const [finalized, setFinalized] = useState(false);
 
   async function generateNarrative() {
     try {
@@ -85,6 +87,65 @@ export default function ReportEditor({
     }
   }
 
+  async function finalizeReport() {
+   if (!narrative.trim()) {
+     setMessage("Narrative cannot be empty.");
+     return;
+   }
+
+   try {
+     setFinalizing(true);
+     setMessage("");
+
+     const saveResponse = await fetch(
+       `/api/cases/${caseId}/narrative`,
+       {
+         method: "PATCH",
+         headers: {
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({
+           narrative,
+         }),
+       }
+     );
+
+     const saveData = await saveResponse.json();
+
+     if (!saveResponse.ok) {
+       throw new Error(
+         saveData.error || "Failed to save narrative."
+       );
+     }
+
+     const reportResponse = await fetch(
+       `/api/cases/${caseId}/report`,
+       {
+         method: "POST",
+       }
+     );
+
+     const reportData = await reportResponse.json();
+
+     if (!reportResponse.ok) {
+       throw new Error(
+         reportData.error || "Failed to finalize report."
+       );
+     }
+
+     setFinalized(true);
+     setMessage("Report finalized successfully.");
+   } catch (error) {
+     setMessage(
+       error instanceof Error
+         ? error.message
+         : "Failed to finalize report."
+     );
+   } finally {
+     setFinalizing(false);
+   }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex gap-3">
@@ -107,6 +168,18 @@ export default function ReportEditor({
         >
           {saving ? "Saving..." : "Save Narrative"}
         </button>
+
+        <button
+         onClick={finalizeReport}
+         disabled={finalizing || !narrative.trim()}
+         className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        >
+          {finalizing
+            ? "Generating PDF..."
+            : finalized
+              ? "Report Finalized"
+              : "Finalize & Generate PDF"}
+          </button>
       </div>
 
       <textarea
@@ -118,6 +191,17 @@ export default function ReportEditor({
         rows={10}
         className="w-full rounded-lg border border-zinc-300 bg-white p-4 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
       />
+
+      {finalized && (
+        <a
+         href={`/api/cases/${caseId}/report`}
+         target="_blank"
+         rel="noreferrer"
+         className="inline-block rounded bg-white px-4 py-2 text-sm font-medium text-black"
+        >
+         View / Download PDF
+       </a>
+      )}
 
       {message && (
         <p className="text-sm text-zinc-500">

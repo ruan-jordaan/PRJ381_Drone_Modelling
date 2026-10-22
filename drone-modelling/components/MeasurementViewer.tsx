@@ -261,7 +261,7 @@ export default function MeasurementViewer({
                 </p>
 
                 <div className="mt-2 flex justify-between text-xs text-zinc-400">
-                  <span>Length:</span>
+                  <span>Distance:</span>
 
                   <span className="font-mono font-medium text-white">
                     {measurement.distanceMeters.toFixed(
