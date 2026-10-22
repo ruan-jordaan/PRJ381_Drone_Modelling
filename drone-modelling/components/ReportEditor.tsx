@@ -37,6 +37,7 @@ export default function ReportEditor({
       }
 
       setNarrative(data.narrative);
+      setFinalized(false);
       setMessage("Narrative generated.");
     } catch (error) {
       setMessage(
@@ -75,6 +76,7 @@ export default function ReportEditor({
         );
       }
 
+      setFinalized(false);
       setMessage("Narrative saved.");
     } catch (error) {
       setMessage(
@@ -133,7 +135,7 @@ export default function ReportEditor({
        );
      }
 
-     setFinalized(false);
+     setFinalized(true);
      setMessage("Report finalized successfully.");
    } catch (error) {
      setMessage(
