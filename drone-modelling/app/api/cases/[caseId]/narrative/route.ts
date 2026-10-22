@@ -54,6 +54,7 @@ export async function POST(
       where: { id: caseId },
       data: {
         narrative,
+        reportUrl: null,
         status: "REPORT_DRAFTED",
       },
     });
@@ -116,6 +117,7 @@ export async function PATCH(
     where: { id: caseId },
     data: {
       narrative: body.narrative.trim(),
+      reportUrl: null,
       status: "REPORT_DRAFTED",
     },
   });
