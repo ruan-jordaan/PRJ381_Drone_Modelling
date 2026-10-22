@@ -133,7 +133,7 @@ export default function ReportEditor({
        );
      }
 
-     setFinalized(true);
+     setFinalized(false);
      setMessage("Report finalized successfully.");
    } catch (error) {
      setMessage(
