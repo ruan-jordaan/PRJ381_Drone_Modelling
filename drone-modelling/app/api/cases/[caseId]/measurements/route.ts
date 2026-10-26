@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { caseReadWhere } from "@/lib/caseAccess";
 
 export async function POST(
   request: Request,
@@ -108,10 +109,7 @@ export async function GET(
   const { caseId } = await params;
 
   const caseRecord = await prisma.case.findFirst({
-    where: {
-      id: caseId,
-      contractorId: user.id,
-    },
+    where: caseReadWhere(user, caseId),
   });
 
   if (!caseRecord) {

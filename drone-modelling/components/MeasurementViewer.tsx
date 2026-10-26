@@ -15,8 +15,10 @@ type SavedMeasurement = {
 
 export default function MeasurementViewer({
   caseId,
+  readOnly = false,
 }: {
   caseId: string;
+  readOnly?: boolean;
 }) {
   const [pointA, setPointA] = useState<Point3D | null>(null);
   const [pointB, setPointB] = useState<Point3D | null>(null);
@@ -174,19 +176,21 @@ export default function MeasurementViewer({
           />
         </div>
 
-        <button
-          onClick={() => {
-            setMeasuring((current) => !current);
-            setPointA(null);
-            setPointB(null);
-            setLabel("");
-          }}
-          className="absolute left-4 top-16 z-20 rounded bg-white px-4 py-2 text-sm font-medium text-black shadow"
-        >
-          {measuring
-            ? "Exit Measure Mode"
-            : "Start Measuring"}
-        </button>
+        {!readOnly && (
+          <button
+            onClick={() => {
+              setMeasuring((current) => !current);
+              setPointA(null);
+              setPointB(null);
+              setLabel("");
+            }}
+            className="absolute left-4 top-16 z-20 rounded bg-white px-4 py-2 text-sm font-medium text-black shadow"
+          >
+            {measuring
+              ? "Exit Measure Mode"
+              : "Start Measuring"}
+          </button>
+        )}
 
         <ModelViewerPane
           caseId={caseId}
@@ -200,7 +204,8 @@ export default function MeasurementViewer({
         />
       </div>
 
-      {/* Measurement Sidebar */}
+      {/* Measurement Sidebar (hidden for read-only insurers) */}
+      {!readOnly && (
       <div className="w-96 overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 text-white">
         <h2 className="mb-6 text-xl font-bold">
           Measurements
@@ -275,6 +280,7 @@ export default function MeasurementViewer({
           )}
         </div>
 
+        {!readOnly && (
         <button
           onClick={finishMeasuring}
           disabled={
@@ -290,8 +296,10 @@ export default function MeasurementViewer({
               ? "Finishing..."
               : "Done Measuring"}
           </button>
+        )}
 
       </div>
+      )}
     </div>
   );
 }

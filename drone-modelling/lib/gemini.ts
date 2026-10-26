@@ -39,10 +39,20 @@ Measurements:
 ${measurementText}
 `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3.8-flash",
-    contents: prompt,
-  });
+  let response;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: prompt,
+      });
+      break;
+    } catch (error) {
+      const status = (error as { status?: number }).status;
+      if (attempt >= 4 || (status !== 503 && status !== 429)) throw error;
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+    }
+  }
 
   const text = response.text;
 

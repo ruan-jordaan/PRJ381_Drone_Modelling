@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { caseReadWhere } from "@/lib/caseAccess";
 import { getObjectBytes, objectExists } from "@/lib/storage";
 
-// Streams the stored .glb through our own server instead of redirecting the
-// browser to a direct R2 URL. The /model route already confirmed our server
-// can reach R2 fine (extraction + upload succeed); this just reuses that same
-// working server-side path for the download too, so the browser never has to
-// talk to r2.cloudflarestorage.com itself.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ caseId: string }> }
@@ -20,14 +16,14 @@ export async function GET(
   const { caseId } = await params;
 
   const caseRecord = await prisma.case.findFirst({
-    where: { id: caseId, contractorId: user.id },
+    where: caseReadWhere(user, caseId),
   });
   if (!caseRecord?.modelUrl || !(await objectExists(caseRecord.modelUrl))) {
     return NextResponse.json({ error: "Model not found" }, { status: 404 });
   }
 
   const { body, contentType } = await getObjectBytes(caseRecord.modelUrl);
-  return new NextResponse(body, {
+  return new NextResponse(new Uint8Array(body), {
     headers: {
       "Content-Type": contentType ?? "model/gltf-binary",
       "Cache-Control": "private, max-age=3600",

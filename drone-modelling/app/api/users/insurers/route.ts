@@ -13,7 +13,6 @@ export async function GET() {
     );
   }
 
-  // Only contractors need to select an insurer when creating a case.
   if (user.role !== UserRole.CONTRACTOR) {
     return NextResponse.json(
       { error: "Only contractors can access insurers." },

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import AppHeader from "@/components/AppHeader";
 import NewCaseForm from "@/components/cases/NewCaseForm";
 
 export default async function NewCasePage() {
@@ -8,5 +9,10 @@ export default async function NewCasePage() {
     redirect("/");
   }
 
-  return <NewCaseForm />;
+  return (
+    <>
+      <AppHeader />
+      <NewCaseForm />
+    </>
+  );
 }

@@ -22,13 +22,6 @@ export async function GET(
 
   const { caseId } = await params;
 
-  /*
-   * Contractors can access their own cases.
-   *
-   * Insurance users can only access:
-   * 1. Cases where they are assigned as the insurer
-   * 2. Cases that have been finalized
-   */
   const accessFilter =
     user.role === UserRole.CONTRACTOR
       ? {

@@ -9,11 +9,6 @@ export type ModelSyncResult =
   | { status: "error"; message: string }
   | { status: "ready" };
 
-// Checks a case's NodeODM task and, once NodeODM reports it complete, pulls
-// the .glb out of the result archive and uploads it to R2. Shared by the
-// viewer's poll route (GET /model) and the NodeODM webhook (POST
-// /webhooks/nodeodm), so both end up at the same extraction logic rather than
-// two copies drifting apart.
 export async function syncCaseModelFromNodeODM(
   caseId: string,
 ): Promise<ModelSyncResult> {
@@ -29,9 +24,6 @@ export async function syncCaseModelFromNodeODM(
   try {
     nodeStatus = await getNodeODMTaskStatus(caseRecord.nodeOdmTaskId);
   } catch {
-    // NodeODM has no record of this task (e.g. its data volume was reset).
-    // Clear the dead task id so a reprocess isn't blocked by the "already
-    // processing" guard.
     await prisma.case.update({
       where: { id: caseId },
       data: { nodeOdmTaskId: null, status: "UPLOADED" },
@@ -42,10 +34,6 @@ export async function syncCaseModelFromNodeODM(
     };
   }
 
-  // NodeODM status codes: 10 queued, 20 running, 30 failed, 40 completed,
-  // 50 canceled. 30/50 are terminal failures, not "still processing" — if we
-  // don't catch these, the case sits on PROCESSING forever and a reprocess
-  // is blocked indefinitely by the claim check in /process.
   if (nodeStatus.status.code === 30 || nodeStatus.status.code === 50) {
     await prisma.case.update({
       where: { id: caseId },

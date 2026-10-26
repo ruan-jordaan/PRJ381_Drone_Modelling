@@ -1,6 +1,3 @@
-// One-off: allow the browser to fetch presigned GET URLs from R2 (needed for
-// the 3D viewer, which loads the .glb client-side via fetch()). Run once:
-//   node scripts/set-r2-cors.mjs
 import "dotenv/config";
 import { S3Client, PutBucketCorsCommand, GetBucketCorsCommand } from "@aws-sdk/client-s3";
 
