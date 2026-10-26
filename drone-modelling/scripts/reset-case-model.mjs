@@ -1,8 +1,3 @@
-// One-off: clear a stale/mock Case.modelUrl so GET /api/cases/[id]/model
-// re-runs the real NodeODM-extract -> R2-upload path instead of serving a
-// signed URL for a key that was never actually uploaded.
-//
-// Usage: node scripts/reset-case-model.mjs <caseId>
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 

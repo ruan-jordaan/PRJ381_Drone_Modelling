@@ -1,8 +1,10 @@
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
-import LogoutButton from "../components/LogoutButton";
+import AppHeader from "../components/AppHeader";
+import CaseStatusBadge from "../components/CaseStatusBadge";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRole, CaseStatus } from "@prisma/client";
@@ -19,7 +21,7 @@ export default async function Dashboard({
   const user = await getCurrentUser();
 
   if (!user) {
-    return null;
+    redirect("/login");
   }
 
   const isContractor = user.role === UserRole.CONTRACTOR;
@@ -27,7 +29,6 @@ export default async function Dashboard({
   const params = await searchParams;
   const search = params.search?.trim() || "";
 
-  // Build the case access filter first.
   const accessFilter = isContractor
     ? {
         contractorId: user.id,
@@ -41,7 +42,6 @@ export default async function Dashboard({
         },
       };
 
-  // Add search filtering only when a search term exists.
   const searchFilter = search
     ? {
         OR: [
@@ -106,10 +106,11 @@ export default async function Dashboard({
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 font-sans antialiased dark:bg-zinc-950 sm:p-10">
+    <>
+    <AppHeader />
+    <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 p-6 font-sans antialiased dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto max-w-6xl">
 
-        {/* Header & Controls */}
         <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -123,7 +124,6 @@ export default async function Dashboard({
 
           <div className="flex w-full flex-col gap-4 sm:flex-row md:w-auto md:items-end">
 
-            {/* Search */}
             <form
               method="GET"
               className="w-full sm:w-64"
@@ -165,23 +165,20 @@ export default async function Dashboard({
               </div>
             )}
 
-            <LogoutButton />
           </div>
         </header>
 
-        {/* Search Information */}
         {search && (
           <div className="mb-6">
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Showing results for:{" "}
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                "{search}"
+                &quot;{search}&quot;
               </span>
             </p>
           </div>
         )}
 
-        {/* Case Grid */}
         {cases.length === 0 ? (
           <Card>
             <div className="py-10 text-center">
@@ -202,10 +199,10 @@ export default async function Dashboard({
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
             {cases.map((c) => (
-              <Card key={c.id}>
+              <div key={c.id} className="transition hover:-translate-y-0.5 hover:shadow-md">
+              <Card>
                 <div className="flex h-full flex-col justify-between gap-6">
 
-                  {/* Card Header */}
                   <div className="flex items-start justify-between gap-2">
 
                     <div>
@@ -218,20 +215,16 @@ export default async function Dashboard({
                       </p>
                     </div>
 
-                    <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
-                      {c.status.replaceAll("_", " ")}
-                    </span>
+                    <CaseStatusBadge status={c.status} />
 
                   </div>
 
-                  {/* Card Body */}
                   <div>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                       {c.description || "No description provided."}
                     </p>
                   </div>
 
-                  {/* Card Action */}
                   <div className="pt-2">
                     <Link href={`/cases/${c.id}`}>
                       <Button
@@ -244,6 +237,7 @@ export default async function Dashboard({
 
                 </div>
               </Card>
+              </div>
             ))}
 
           </div>
@@ -251,5 +245,6 @@ export default async function Dashboard({
 
       </div>
     </div>
+    </>
   );
 }

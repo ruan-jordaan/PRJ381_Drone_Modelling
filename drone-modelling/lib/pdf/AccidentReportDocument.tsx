@@ -156,7 +156,6 @@ export default function AccidentReportDocument({
           Case ID: {caseId}
         </Text>
 
-        {/* Case Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Case Details
@@ -182,7 +181,6 @@ export default function AccidentReportDocument({
           </Text>
         </View>
 
-        {/* Parties */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Parties Involved
@@ -240,7 +238,6 @@ export default function AccidentReportDocument({
           ))}
         </View>
 
-        {/* Measurements */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Scene Measurements
@@ -275,7 +272,6 @@ export default function AccidentReportDocument({
           </View>
         </View>
 
-        {/* AI Narrative */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             AI-Assisted Summary

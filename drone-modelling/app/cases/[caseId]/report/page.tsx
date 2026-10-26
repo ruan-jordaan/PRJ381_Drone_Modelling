@@ -1,3 +1,4 @@
+import AppHeader from "@/components/AppHeader";
 import Card from "@/components/ui/Card";
 import BackLink from "@/components/BackLink";
 import ReportEditor from "@/components/ReportEditor";
@@ -47,7 +48,9 @@ export default async function ReportPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
+    <>
+    <AppHeader />
+    <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto w-full max-w-4xl">
         <BackLink
           href={`/cases/${caseId}`}
@@ -214,5 +217,6 @@ export default async function ReportPage({
         </Card>
       </div>
     </div>
+    </>
   );
 }

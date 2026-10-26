@@ -18,7 +18,6 @@ function optionalString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-// GET /api/cases
 export async function GET() {
   const user = await getCurrentUser();
 
@@ -56,7 +55,6 @@ export async function GET() {
   return NextResponse.json({ cases });
 }
 
-// POST /api/cases
 export async function POST(request: Request) {
   const user = await getCurrentUser();
 
@@ -67,7 +65,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Only contractors can create cases.
   if (user.role !== UserRole.CONTRACTOR) {
     return NextResponse.json(
       { error: "Only contractors can create cases." },
@@ -97,7 +94,6 @@ export async function POST(request: Request) {
     ? (body.parties as PartyInput[])
     : [];
 
-  // Validate title.
   if (!title) {
     return NextResponse.json(
       { error: "Case title is required." },
@@ -105,7 +101,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // At least one party is required.
   if (parties.length === 0) {
     return NextResponse.json(
       { error: "At least one party is required." },
@@ -120,7 +115,6 @@ export async function POST(request: Request) {
     insurerId: optionalString(party.insurerId),
   }));
 
-  // Every party must have a name.
   if (normalizedParties.some((party) => !party.name)) {
     return NextResponse.json(
       { error: "Every party must have a name." },
@@ -128,7 +122,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Find all selected insurers.
   const insurerIds = [
     ...new Set(
       normalizedParties
@@ -137,7 +130,6 @@ export async function POST(request: Request) {
     ),
   ];
 
-  // At least one insured party is required.
   if (insurerIds.length === 0) {
     return NextResponse.json(
       { error: "At least one party must have an insurer assigned." },
@@ -145,7 +137,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Make sure every insurer ID belongs to an INSURANCE user.
   const insurers = await prisma.user.findMany({
     where: {
       id: {
@@ -165,7 +156,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Create the case and its parties together.
   const createdCase = await prisma.case.create({
     data: {
       title,

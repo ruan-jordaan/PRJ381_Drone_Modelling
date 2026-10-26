@@ -1,3 +1,5 @@
+import AppHeader from "@/components/AppHeader";
+import CaseStatusBadge from "@/components/CaseStatusBadge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import BackLink from "@/components/BackLink";
@@ -70,7 +72,9 @@ export default async function CaseDetailsPage({
   const isInsurance = user.role === UserRole.INSURANCE;
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
+    <>
+    <AppHeader />
+    <div className="min-h-[calc(100vh-4rem)] bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto max-w-4xl">
         <BackLink href="/" label="Dashboard" />
 
@@ -85,9 +89,7 @@ export default async function CaseDetailsPage({
             </p>
           </div>
 
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-            Status: {caseData.status}
-          </span>
+          <CaseStatusBadge status={caseData.status} />
         </header>
 
         <Card>
@@ -150,15 +152,25 @@ export default async function CaseDetailsPage({
                 This finalized case report is available for review.
               </p>
 
-              <a
-                href={`/api/cases/${caseId}/report`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Button>
-                 View / Download PDF
-                </Button>
-              </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  href={`/api/cases/${caseId}/report`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Button>
+                   View / Download PDF
+                  </Button>
+                </a>
+
+                <Link href={`/cases/${caseId}/viewer`}>
+                  <Button
+                    className="!bg-transparent !text-zinc-900 border border-black/[.08] hover:!bg-zinc-100 dark:!text-zinc-100 dark:border-white/[.145] dark:hover:!bg-zinc-900"
+                  >
+                    View 3D Model
+                  </Button>
+                </Link>
+              </div>
             </Card>
           </div>
         )}
@@ -225,5 +237,6 @@ export default async function CaseDetailsPage({
        )}
       </div>
     </div>
+    </>
   );
 }

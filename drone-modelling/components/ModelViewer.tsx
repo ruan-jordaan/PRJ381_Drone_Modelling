@@ -65,8 +65,6 @@ export default function ModelViewer({
         position: [5, 5, 5],
         fov: 50,
 
-        // NodeODM/OpenMVS model coordinates use Z as the vertical axis.
-        // OrbitControls therefore needs Z to be treated as "up".
         up: [0, 0, 1],
       }}
      >
@@ -127,22 +125,17 @@ export default function ModelViewer({
       <OrbitControls
         makeDefault
 
-        // Slight smoothing instead of immediate/jumpy camera movement.
         enableDamping
         dampingFactor={0.08}
 
-        // Normal viewer controls.
         enableRotate
         enablePan
         enableZoom
 
-        // Slow the controls down a little.
         rotateSpeed={0.5}
         panSpeed={0.8}
         zoomSpeed={0.8}
 
-        // Right-click panning follows the screen instead of
-        // moving along the ground plane.
         screenSpacePanning
       />
     </Canvas>

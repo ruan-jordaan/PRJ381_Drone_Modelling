@@ -23,8 +23,6 @@ async function initNodeODMTask(webhookUrl?: string): Promise<string> {
       { name: "sky-removal", value: true },
     ]),
   );
-  // NodeODM POSTs to this URL (with the task's status, same shape as
-  // /task/{id}/info) when the task finishes — see app/api/webhooks/nodeodm.
   if (webhookUrl) {
     formData.append("webhook", webhookUrl);
   }
@@ -102,9 +100,6 @@ export async function getNodeODMTaskStatus(
     throw new Error(`Failed to fetch status for task ${uuid}`);
   }
   const data = await response.json();
-  // NodeODM returns 200 OK with { error: "..." } (no `status` field) for a
-  // task ID it doesn't recognize, instead of a 4xx — catch that explicitly
-  // rather than letting callers crash on `.status.code`.
   if (!data.status || data.error) {
     throw new Error(
       `NodeODM does not recognize task ${uuid}: ${data.error ?? "no status in response"}`,
