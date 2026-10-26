@@ -66,6 +66,9 @@ export default async function CaseDetailsPage({
     notFound();
   }
 
+  const isContractor = user.role === UserRole.CONTRACTOR;
+  const isInsurance = user.role === UserRole.INSURANCE;
+
   return (
     <div className="min-h-screen bg-zinc-50 p-6 dark:bg-zinc-950 sm:p-10">
       <div className="mx-auto max-w-4xl">
@@ -136,6 +139,31 @@ export default async function CaseDetailsPage({
           </Card>
         </div>
 
+        {isInsurance && (
+          <div className="mt-6">
+            <Card>
+             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+               Final Report
+              </h2>
+
+              <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
+                This finalized case report is available for review.
+              </p>
+
+              <a
+                href={`/api/cases/${caseId}/report`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Button>
+                 View / Download PDF
+                </Button>
+              </a>
+            </Card>
+          </div>
+        )}
+
+       {isContractor && (
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -174,7 +202,9 @@ export default async function CaseDetailsPage({
             </div>
           </Card>
         </div>
+       )}
 
+       {isContractor && (
         <div className="mt-6">
           <Card>
             <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -192,6 +222,7 @@ export default async function CaseDetailsPage({
             <ImageUploader caseId={caseId} />
           </Card>
         </div>
+       )}
       </div>
     </div>
   );

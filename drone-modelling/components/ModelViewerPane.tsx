@@ -14,7 +14,17 @@ type ModelState =
   | { status: "ready"; url: string }
   | { status: "error"; message: string };
 
-export default function ModelViewerPane({ caseId }: { caseId: string }) {
+export default function ModelViewerPane({
+  caseId,
+  onPointSelected,
+  pointA,
+  pointB,
+}: {
+  caseId: string;
+  onPointSelected?: (point: [number, number, number]) => void;
+  pointA?: [number, number, number] | null;
+  pointB?: [number, number, number] | null;
+}) {
   const [state, setState] = useState<ModelState>({ status: "loading" });
 
   useEffect(() => {
@@ -71,7 +81,14 @@ export default function ModelViewerPane({ caseId }: { caseId: string }) {
     return <Centered>{state.message}</Centered>;
   }
 
-  return <ModelViewer url={state.url} />;
+  return (
+   <ModelViewer
+     url={state.url}
+     onPointSelected={onPointSelected}
+     pointA={pointA}
+     pointB={pointB}
+   />
+  );
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
